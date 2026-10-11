@@ -5711,8 +5711,9 @@ wlRefreshPlayers()
 
 -- ------------------------ MOBILE: FPS + PING HUD ----------------------------
 -- Small HUD at the top of the screen showing live FPS + ping (ms).
--- Toggle: floating round button (mobile-friendly, works even with the GUI
--- closed) OR the FPS + PING switch in SETTINGS. Nothing else is touched.
+-- The bar ITSELF is tappable (mobile keybind): tap it to on/off the main GUI.
+-- Enable the display via SETTINGS > MOBILE - FPS + PING, or press RIGHT SHIFT
+-- (same as PC) to toggle the GUI. Nothing else is touched.
 local perfHud = Instance.new("Frame")
 perfHud.Name = "FpsPingHud"
 perfHud.AnchorPoint = Vector2.new(0.5, 0)
@@ -5730,24 +5731,22 @@ stroke(perfHud, COLORS.White, 1, 0.5)
 local perfText = label(perfHud, "Text", "FPS --  |  PING ---ms", UDim2.new(1, 0, 1, 0), UDim2.fromOffset(0, 0), 10, COLORS.White, Enum.Font.GothamBold)
 perfText.ZIndex = 501
 
--- floating mobile toggle button (bottom-right of the screen)
-local perfBtn = Instance.new("TextButton")
-perfBtn.Name = "FpsPingButton"
-perfBtn.AnchorPoint = Vector2.new(1, 1)
-perfBtn.Position = UDim2.new(1, -8, 1, -10)
-perfBtn.Size = UDim2.fromOffset(46, 46)
-perfBtn.BackgroundColor3 = COLORS.Log
-perfBtn.BackgroundTransparency = 0.25
-perfBtn.BorderSizePixel = 0
-perfBtn.TextColor3 = COLORS.White
-perfBtn.Text = "FPS"
-perfBtn.TextSize = 9
-perfBtn.Font = Enum.Font.GothamBold
-perfBtn.ZIndex = 400
-perfBtn.Parent = gui
-corner(perfBtn, 23)
-stroke(perfBtn, COLORS.White, 1, 0.6)
-pressable(perfBtn)
+-- the FPS bar itself is the tap target (opens/closes the main GUI)
+local perfTap = Instance.new("TextButton")
+perfTap.Name = "FpsPingTap"
+perfTap.Size = UDim2.new(1, 0, 1, 0)
+perfTap.BackgroundTransparency = 1
+perfTap.BorderSizePixel = 0
+perfTap.Text = ""
+perfTap.AutoButtonColor = false
+perfTap.ZIndex = 502
+perfTap.Parent = perfHud
+pressable(perfTap)
+
+perfTap.MouseButton1Click:Connect(function()
+	window.Visible = not window.Visible
+	perfUpdateHud()
+end)
 
 local perfStats = game:GetService("Stats").PerformanceStats
 local perfFrames = 0
@@ -5784,10 +5783,17 @@ local function perfUpdateHud()
 	perfHud.Visible = perfUserEnabled or not window.Visible
 end
 
-perfBtn.MouseButton1Click:Connect(function()
-	window.Visible = not window.Visible
-	perfUpdateHud()
-end)
+local perfToggleKey = Enum.KeyCode.RightShift
+
+trackConnection(UserInputService.InputBegan:Connect(function(input, gameProcessed)
+	if gameProcessed then
+		return
+	end
+	if input.KeyCode == perfToggleKey then
+		window.Visible = not window.Visible
+		perfUpdateHud()
+	end
+end))
 
 perfUpdateHud()
 
@@ -5836,5 +5842,9 @@ mobBtn.MouseButton1Click:Connect(function()
 	perfUserEnabled = not perfUserEnabled
 	perfUpdateHud()
 end)
+
+local perfNote = label(settingsPage, "MobileNote", "tap FPS on top, or press RIGHT SHIFT, to on/off GUI", UDim2.new(1, -34, 0, 14), UDim2.fromOffset(17, 328), 9, COLORS.Dim, Enum.Font.GothamBold)
+perfNote.TextXAlignment = Enum.TextXAlignment.Center
+perfNote.ZIndex = 4
 -- ============================================================================
 
