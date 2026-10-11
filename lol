@@ -5708,5 +5708,136 @@ end)
 
 wlRefresh()
 wlRefreshPlayers()
+
+-- ------------------------ MOBILE: FPS + PING HUD ----------------------------
+-- Small HUD at the top of the screen showing live FPS + ping (ms).
+-- Toggle: floating round button (mobile-friendly, works even with the GUI
+-- closed) OR the FPS + PING switch in SETTINGS. Nothing else is touched.
+local perfHud = Instance.new("Frame")
+perfHud.Name = "FpsPingHud"
+perfHud.AnchorPoint = Vector2.new(0.5, 0)
+perfHud.Position = UDim2.new(0.5, 0, 0, 8)
+perfHud.Size = UDim2.fromOffset(170, 22)
+perfHud.BackgroundColor3 = Color3.new(0, 0, 0)
+perfHud.BackgroundTransparency = 0.45
+perfHud.BorderSizePixel = 0
+perfHud.ZIndex = 500
+perfHud.Visible = false
+perfHud.Parent = gui
+corner(perfHud, 8)
+stroke(perfHud, COLORS.White, 1, 0.5)
+
+local perfText = label(perfHud, "Text", "FPS --  |  PING ---ms", UDim2.new(1, 0, 1, 0), UDim2.fromOffset(0, 0), 10, COLORS.White, Enum.Font.GothamBold)
+perfText.ZIndex = 501
+
+-- floating mobile toggle button (bottom-right of the screen)
+local perfBtn = Instance.new("TextButton")
+perfBtn.Name = "FpsPingButton"
+perfBtn.AnchorPoint = Vector2.new(1, 1)
+perfBtn.Position = UDim2.new(1, -8, 1, -10)
+perfBtn.Size = UDim2.fromOffset(46, 46)
+perfBtn.BackgroundColor3 = COLORS.Log
+perfBtn.BackgroundTransparency = 0.25
+perfBtn.BorderSizePixel = 0
+perfBtn.TextColor3 = COLORS.White
+perfBtn.Text = "FPS"
+perfBtn.TextSize = 9
+perfBtn.Font = Enum.Font.GothamBold
+perfBtn.ZIndex = 400
+perfBtn.Parent = gui
+corner(perfBtn, 23)
+stroke(perfBtn, COLORS.White, 1, 0.6)
+pressable(perfBtn)
+
+local perfStats = game:GetService("Stats").PerformanceStats
+local perfFrames = 0
+local perfCountTime = 0
+
+local perfConn = RunService.RenderStepped:Connect(function(dt)
+	if not perfHud.Visible then
+		return
+	end
+	perfFrames = perfFrames + 1
+	perfCountTime = perfCountTime + dt
+	if perfCountTime >= 0.5 then
+		local fps = math.floor(perfFrames / perfCountTime)
+		local ms = 0
+		pcall(function()
+			ms = math.floor(perfStats.Ping:GetValue())
+		end)
+		perfText.Text = "FPS " .. fps .. "  |  PING " .. ms .. "ms"
+		perfFrames = 0
+		perfCountTime = 0
+	end
+end)
+
+table.insert(restoreCallbacks, function()
+	if perfConn then
+		perfConn:Disconnect()
+		perfConn = nil
+	end
+end)
+
+local function setPerfEnabled(enabled)
+	perfHud.Visible = enabled
+	perfBtn.Text = enabled and "ON" or "FPS"
+	if enabled then
+		perfText.Text = "FPS ...  |  PING ...ms"
+	end
+end
+
+perfBtn.MouseButton1Click:Connect(function()
+	setPerfEnabled(not perfHud.Visible)
+end)
+
+setPerfEnabled(false)
+
+-- SETTINGS page -> MOBILE section: FPS + PING switch
+local perfDash = Instance.new("Frame")
+perfDash.Size = UDim2.fromOffset(10, 1)
+perfDash.Position = UDim2.fromOffset(17, 266)
+perfDash.BackgroundColor3 = COLORS.Dim
+perfDash.BorderSizePixel = 0
+perfDash.ZIndex = 3
+perfDash.Parent = settingsPage
+
+local perfTitle = label(settingsPage, "MobileTitle", "MOBILE", UDim2.fromOffset(100, 24), UDim2.fromOffset(33, 259), 11, COLORS.White, Enum.Font.GothamBold)
+perfTitle.TextStrokeColor3 = Color3.new(0, 0, 0)
+perfTitle.TextStrokeTransparency = 0.35
+perfTitle.ZIndex = 3
+
+local perfRule = Instance.new("Frame")
+perfRule.Size = UDim2.new(1, -152, 0, 1)
+perfRule.Position = UDim2.fromOffset(135, 266)
+perfRule.BackgroundColor3 = COLORS.Dim
+perfRule.BackgroundTransparency = 0.35
+perfRule.BorderSizePixel = 0
+perfRule.ZIndex = 3
+perfRule.Parent = settingsPage
+
+local perfCard = Instance.new("Frame")
+perfCard.Name = "FpsPingRow"
+perfCard.Size = UDim2.new(1, -34, 0, 34)
+perfCard.Position = UDim2.fromOffset(17, 284)
+perfCard.BackgroundColor3 = COLORS.Log
+perfCard.BackgroundTransparency = 0.12
+perfCard.BorderSizePixel = 0
+perfCard.ZIndex = 6
+perfCard.Parent = settingsPage
+corner(perfCard, 6)
+stroke(perfCard, COLORS.White, 1, 0.84)
+
+label(perfCard, "Title", "FPS + PING (top of screen)", UDim2.new(1, -58, 1, 0), UDim2.fromOffset(12, 0), 10, COLORS.White, Enum.Font.GothamMedium).ZIndex = 7
+
+createSwitch(perfCard, {
+	position = UDim2.new(1, -48, 0.5, -9),
+	state = false,
+	zIndex = 7,
+	onChange = setPerfEnabled,
+})
+
+local perfNote = label(settingsPage, "MobileNote", "tap the round FPS button on your screen to show/hide", UDim2.new(1, -34, 0, 14), UDim2.fromOffset(17, 326), 9, COLORS.Dim, Enum.Font.GothamBold)
+perfNote.TextXAlignment = Enum.TextXAlignment.Center
+perfNote.ZIndex = 4
 -- ============================================================================
 
