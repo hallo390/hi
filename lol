@@ -5740,7 +5740,7 @@ perfBtn.BackgroundColor3 = COLORS.Log
 perfBtn.BackgroundTransparency = 0.25
 perfBtn.BorderSizePixel = 0
 perfBtn.TextColor3 = COLORS.White
-perfBtn.Text = "FPS"
+perfBtn.Text = "HIDE"
 perfBtn.TextSize = 9
 perfBtn.Font = Enum.Font.GothamBold
 perfBtn.ZIndex = 400
@@ -5778,19 +5778,19 @@ table.insert(restoreCallbacks, function()
 	end
 end)
 
-local function setPerfEnabled(enabled)
-	perfHud.Visible = enabled
-	perfBtn.Text = enabled and "ON" or "FPS"
-	if enabled then
-		perfText.Text = "FPS ...  |  PING ...ms"
-	end
+local perfUserEnabled = false
+
+local function perfUpdateHud()
+	perfHud.Visible = perfUserEnabled or not window.Visible
+	perfBtn.Text = window.Visible and "HIDE" or "SHOW"
 end
 
 perfBtn.MouseButton1Click:Connect(function()
-	setPerfEnabled(not perfHud.Visible)
+	window.Visible = not window.Visible
+	perfUpdateHud()
 end)
 
-setPerfEnabled(false)
+perfUpdateHud()
 
 -- SETTINGS page -> MOBILE section: FPS + PING switch
 local perfDash = Instance.new("Frame")
@@ -5818,7 +5818,7 @@ perfRule.Parent = settingsPage
 local perfCard = Instance.new("Frame")
 perfCard.Name = "FpsPingRow"
 perfCard.Size = UDim2.new(1, -34, 0, 34)
-perfCard.Position = UDim2.fromOffset(17, 284)
+perfCard.Position = UDim2.fromOffset(17, 282)
 perfCard.BackgroundColor3 = COLORS.Log
 perfCard.BackgroundTransparency = 0.12
 perfCard.BorderSizePixel = 0
@@ -5833,11 +5833,46 @@ createSwitch(perfCard, {
 	position = UDim2.new(1, -48, 0.5, -9),
 	state = false,
 	zIndex = 7,
-	onChange = setPerfEnabled,
+	onChange = function(enabled)
+		perfUserEnabled = enabled
+		perfUpdateHud()
+	end,
 })
 
-local perfNote = label(settingsPage, "MobileNote", "tap the round FPS button on your screen to show/hide", UDim2.new(1, -34, 0, 14), UDim2.fromOffset(17, 326), 9, COLORS.Dim, Enum.Font.GothamBold)
-perfNote.TextXAlignment = Enum.TextXAlignment.Center
-perfNote.ZIndex = 4
+local hideCard = Instance.new("Frame")
+hideCard.Name = "HideGuiRow"
+hideCard.Size = UDim2.new(1, -34, 0, 26)
+hideCard.Position = UDim2.fromOffset(17, 318)
+hideCard.BackgroundColor3 = COLORS.Log
+hideCard.BackgroundTransparency = 0.12
+hideCard.BorderSizePixel = 0
+hideCard.ZIndex = 6
+hideCard.Parent = settingsPage
+corner(hideCard, 6)
+stroke(hideCard, COLORS.White, 1, 0.84)
+
+label(hideCard, "Title", "HIDE GUI", UDim2.new(1, -76, 1, 0), UDim2.fromOffset(12, 0), 10, COLORS.White, Enum.Font.GothamMedium).ZIndex = 7
+
+local hideBtn = Instance.new("TextButton")
+hideBtn.Name = "HideGuiButton"
+hideBtn.Size = UDim2.fromOffset(66, 20)
+hideBtn.Position = UDim2.new(1, -72, 0.5, -10)
+hideBtn.BackgroundColor3 = COLORS.Control
+hideBtn.TextColor3 = COLORS.White
+hideBtn.Text = "HIDE"
+hideBtn.TextSize = 9
+hideBtn.Font = Enum.Font.GothamBold
+hideBtn.AutoButtonColor = false
+hideBtn.BorderSizePixel = 0
+hideBtn.ZIndex = 7
+hideBtn.Parent = hideCard
+corner(hideBtn, 10)
+stroke(hideBtn, COLORS.White, 1, 0.7)
+pressable(hideBtn)
+
+hideBtn.MouseButton1Click:Connect(function()
+	window.Visible = false
+	perfUpdateHud()
+end)
 -- ============================================================================
 
