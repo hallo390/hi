@@ -5740,7 +5740,7 @@ perfBtn.BackgroundColor3 = COLORS.Log
 perfBtn.BackgroundTransparency = 0.25
 perfBtn.BorderSizePixel = 0
 perfBtn.TextColor3 = COLORS.White
-perfBtn.Text = "HIDE"
+perfBtn.Text = "FPS"
 perfBtn.TextSize = 9
 perfBtn.Font = Enum.Font.GothamBold
 perfBtn.ZIndex = 400
@@ -5782,7 +5782,6 @@ local perfUserEnabled = false
 
 local function perfUpdateHud()
 	perfHud.Visible = perfUserEnabled or not window.Visible
-	perfBtn.Text = window.Visible and "HIDE" or "SHOW"
 end
 
 perfBtn.MouseButton1Click:Connect(function()
