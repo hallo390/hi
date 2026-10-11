@@ -5108,7 +5108,7 @@ do
 
 	local optOrder = 0
 
-	local function optRow(key, text, initial)
+	local function optRow(key, text, initial, onChange)
 		optOrder = optOrder + 1
 		local row = Instance.new("Frame")
 		row.Name = "Row_" .. key
@@ -5124,20 +5124,76 @@ do
 
 		label(row, "Title", text, UDim2.new(1, -58, 1, 0), UDim2.fromOffset(12, 0), 10, COLORS.White, Enum.Font.GothamMedium).ZIndex = 7
 
-		createSwitch(row, {
+		return createSwitch(row, {
 			position = UDim2.new(1, -48, 0.5, -9),
 			state = initial,
 			zIndex = 7,
+			onChange = onChange,
 		})
 	end
 
-	optRow("master", "Optimization", false)
-	optRow("lowGraphics", "Low graphics", false)
+	-- real optimization logic (reversible: turning it off restores your settings)
+	local optSaved = {}
+
+	local function optSave(key, getter)
+		if optSaved[key] == nil then
+			local ok, value = pcall(getter)
+			if ok then optSaved[key] = value end
+		end
+	end
+
+	local optLow, optMaster
+
+	local function applyOpt()
+		local lighting = game:GetService("Lighting")
+		local sg = settings()
+		local active = optMaster.state or optLow.state
+
+		optSave("globalShadows", function() return lighting.GlobalShadows end)
+		optSave("fogEnd", function() return lighting.FogEnd end)
+		optSave("fogStart", function() return lighting.FogStart end)
+		optSave("diffuse", function() return lighting.EnvironmentDiffuseScale end)
+		optSave("specular", function() return lighting.EnvironmentSpecularScale end)
+		optSave("quality", function() return sg.RenderingQualityLevel end)
+
+		if active then
+			pcall(function() lighting.GlobalShadows = false end)
+			pcall(function() lighting.FogEnd = 9e9 end)
+			pcall(function() lighting.FogStart = 9e9 end)
+			pcall(function() sethiddenproperty(sg, "RenderingQualityLevel", 1) end)
+			pcall(function() sg.RenderingQualityLevel = Enum.RenderingQualityLevel.Level01 end)
+		else
+			if optSaved.globalShadows ~= nil then pcall(function() lighting.GlobalShadows = optSaved.globalShadows end) end
+			if optSaved.fogEnd ~= nil then pcall(function() lighting.FogEnd = optSaved.fogEnd end) end
+			if optSaved.fogStart ~= nil then pcall(function() lighting.FogStart = optSaved.fogStart end) end
+			if optSaved.quality ~= nil then
+				pcall(function() sg.RenderingQualityLevel = optSaved.quality end)
+				pcall(function() sethiddenproperty(sg, "RenderingQualityLevel", optSaved.quality and optSaved.quality.Value or 5) end)
+			end
+		end
+
+		if optMaster.state then
+			pcall(function() lighting.EnvironmentDiffuseScale = 0 end)
+			pcall(function() lighting.EnvironmentSpecularScale = 0 end)
+		else
+			if optSaved.diffuse ~= nil then pcall(function() lighting.EnvironmentDiffuseScale = optSaved.diffuse end) end
+			if optSaved.specular ~= nil then pcall(function() lighting.EnvironmentSpecularScale = optSaved.specular end) end
+		end
+	end
+
+	optLow = optRow("lowGraphics", "Low graphics", false, function()
+		applyOpt()
+	end)
+
+	optMaster = optRow("master", "Optimization", false, function(enabled)
+		optLow:Set(enabled, true)
+		applyOpt()
+	end)
 
 	local note = label(
 		settingsPage,
 		"Note",
-		"visual only - nothing wired up",
+		"applies instantly - turning it off restores your settings",
 		UDim2.new(1, -34, 0, 16),
 		UDim2.fromOffset(17, 238),
 		9,
