@@ -5814,63 +5814,26 @@ perfRule.BorderSizePixel = 0
 perfRule.ZIndex = 3
 perfRule.Parent = settingsPage
 
-local perfCard = Instance.new("Frame")
-perfCard.Name = "FpsPingRow"
-perfCard.Size = UDim2.new(1, -34, 0, 34)
-perfCard.Position = UDim2.fromOffset(17, 282)
-perfCard.BackgroundColor3 = COLORS.Log
-perfCard.BackgroundTransparency = 0.12
-perfCard.BorderSizePixel = 0
-perfCard.ZIndex = 6
-perfCard.Parent = settingsPage
-corner(perfCard, 6)
-stroke(perfCard, COLORS.White, 1, 0.84)
+local mobBtn = Instance.new("TextButton")
+mobBtn.Name = "MobileButton"
+mobBtn.Size = UDim2.new(1, -34, 0, 42)
+mobBtn.Position = UDim2.fromOffset(17, 282)
+mobBtn.BackgroundColor3 = COLORS.Control
+mobBtn.BackgroundTransparency = 0.15
+mobBtn.BorderSizePixel = 0
+mobBtn.TextColor3 = COLORS.White
+mobBtn.Text = "MOBILE  -  FPS + PING"
+mobBtn.TextSize = 11
+mobBtn.Font = Enum.Font.GothamBold
+mobBtn.AutoButtonColor = false
+mobBtn.ZIndex = 7
+mobBtn.Parent = settingsPage
+corner(mobBtn, 6)
+stroke(mobBtn, COLORS.White, 1, 0.7)
+pressable(mobBtn)
 
-label(perfCard, "Title", "FPS + PING (top of screen)", UDim2.new(1, -58, 1, 0), UDim2.fromOffset(12, 0), 10, COLORS.White, Enum.Font.GothamMedium).ZIndex = 7
-
-createSwitch(perfCard, {
-	position = UDim2.new(1, -48, 0.5, -9),
-	state = false,
-	zIndex = 7,
-	onChange = function(enabled)
-		perfUserEnabled = enabled
-		perfUpdateHud()
-	end,
-})
-
-local hideCard = Instance.new("Frame")
-hideCard.Name = "HideGuiRow"
-hideCard.Size = UDim2.new(1, -34, 0, 26)
-hideCard.Position = UDim2.fromOffset(17, 318)
-hideCard.BackgroundColor3 = COLORS.Log
-hideCard.BackgroundTransparency = 0.12
-hideCard.BorderSizePixel = 0
-hideCard.ZIndex = 6
-hideCard.Parent = settingsPage
-corner(hideCard, 6)
-stroke(hideCard, COLORS.White, 1, 0.84)
-
-label(hideCard, "Title", "HIDE GUI", UDim2.new(1, -76, 1, 0), UDim2.fromOffset(12, 0), 10, COLORS.White, Enum.Font.GothamMedium).ZIndex = 7
-
-local hideBtn = Instance.new("TextButton")
-hideBtn.Name = "HideGuiButton"
-hideBtn.Size = UDim2.fromOffset(66, 20)
-hideBtn.Position = UDim2.new(1, -72, 0.5, -10)
-hideBtn.BackgroundColor3 = COLORS.Control
-hideBtn.TextColor3 = COLORS.White
-hideBtn.Text = "HIDE"
-hideBtn.TextSize = 9
-hideBtn.Font = Enum.Font.GothamBold
-hideBtn.AutoButtonColor = false
-hideBtn.BorderSizePixel = 0
-hideBtn.ZIndex = 7
-hideBtn.Parent = hideCard
-corner(hideBtn, 10)
-stroke(hideBtn, COLORS.White, 1, 0.7)
-pressable(hideBtn)
-
-hideBtn.MouseButton1Click:Connect(function()
-	window.Visible = false
+mobBtn.MouseButton1Click:Connect(function()
+	perfUserEnabled = not perfUserEnabled
 	perfUpdateHud()
 end)
 -- ============================================================================
