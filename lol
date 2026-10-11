@@ -2014,7 +2014,7 @@ settingsPage.Parent = window
 local footer = label(
 	window,
 	"DiscordFooter",
-	"discord.gg/UAVhwaq9KF",
+	"discord.gg/nnkfvWdK42",
 	UDim2.fromOffset(140, 19),
 	UDim2.new(0.5, -70, 0, 414),
 	10,
@@ -5753,20 +5753,21 @@ local perfFrames = 0
 local perfCountTime = 0
 
 local perfConn = RunService.RenderStepped:Connect(function(dt)
-	if not perfHud.Visible then
-		return
-	end
-	perfFrames = perfFrames + 1
-	perfCountTime = perfCountTime + dt
-	if perfCountTime >= 0.5 then
-		local fps = math.floor(perfFrames / perfCountTime)
-		local ms = 0
-		pcall(function()
-			ms = math.floor(perfStats.Ping:GetValue())
-		end)
-		perfText.Text = "FPS " .. fps .. "  |  PING " .. ms .. "ms"
-		perfFrames = 0
-		perfCountTime = 0
+	if perfHud.Visible then
+		perfFrames = perfFrames + 1
+		perfCountTime = perfCountTime + dt
+		if perfCountTime >= 0.5 then
+			local fps = math.floor(perfFrames / perfCountTime)
+			local ms = 0
+			pcall(function()
+				ms = math.floor(perfStats.Ping:GetValue())
+			end)
+			perfText.Text = "FPS " .. fps .. "  |  PING " .. ms .. "ms"
+			perfFrames = 0
+			perfCountTime = 0
+		end
+		-- compact: fit the bar exactly to the text
+		perfHud.Size = UDim2.fromOffset(math.max(perfText.TextBounds.X + 20, 90), 22)
 	end
 end)
 
